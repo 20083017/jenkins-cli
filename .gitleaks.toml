@@ -1,4 +1,5 @@
 # Gitleaks configuration for jenkins-cli
+# Based on https://github.com/Typeform/gitleaks-config
 # https://github.com/gitleaks/gitleaks
 
 title = "gitleaks config for jenkins-cli"
@@ -9,19 +10,30 @@ useDefault = true
 
 [allowlist]
 description = "Allowlist for test fixtures and known false positives"
+regexTarget = "line"
 
 # Paths to exclude from scanning
 paths = [
-  '''test/fixtures/.*''',
-  '''examples/.*\.example''',
-  '''.tmp-jk-e2e/.*''',
-  '''.*_test\.go$''',  # Test files may contain mock credentials
-  '''docs/.*\.md$''',  # Documentation with examples
+  '''\.gitleaks\.toml$''',
+  '''(.*?)(jpg|gif|doc|pdf|bin|png|svg)$''',
+  '''(.*?)_test\.go$''',
+  '''(.*?)\.(spec|test)\.(j|t)s$''',
+  '''go\.(mod|sum)$''',
+  '''vendor\.json''',
+  '''Gopkg\.(lock|toml)''',
+  '''package-lock\.json''',
+  '''package\.json''',
+  '''yarn\.lock''',
+  '''node_modules\/''',
+  '''vendor\/''',
+  '''\.tmp-jk-e2e\/''',
+  '''docs\/.*\.md$''',
 ]
 
 # Common test values and patterns that are not real secrets
 regexes = [
   '''password123''',
+  '''admin123''',           # e2e test Jenkins password (hack/e2e/up.sh)
   '''test-api-key''',
   '''fake-token''',
   '''dummy-secret''',
@@ -30,33 +42,30 @@ regexes = [
   '''127\.0\.0\.1''',
   '''192\.168\..*''',
   '''0\.0\.0\.0''',
-  '''jenkins\.company\.example''',  # Example domain from README
+  '''jenkins\.company\.example''',
 ]
 
 # Allow dependency lock files and generated content
-files = [
-  '''go\.sum$''',
-  '''go\.mod$''',
-  '''package-lock\.json$''',
-  '''yarn\.lock$''',
-  '''pnpm-lock\.yaml$''',
+stopwords = [
+  "EXAMPLE",
+  "example",
+  "CHANGEME",
+  "changeme",
+  "PLACEHOLDER",
+  "placeholder",
 ]
 
-# Commit SHAs that are known to be clean (add fingerprints here)
-commits = []
-
+# ============================================================================
 # Custom rules for Jenkins-specific secrets
+# ============================================================================
+
 [[rules]]
 id = "jenkins-api-token"
 description = "Jenkins API Token (32-char hex format)"
 regex = '''(?i)(jenkins[_-]?(api[_-]?)?token)\s*[:=]\s*['"]?([0-9a-f]{32})['"]?'''
 entropy = 3.5
 secretGroup = 3
-keywords = [
-  "jenkins",
-  "token",
-  "api",
-]
+keywords = ["jenkins", "token", "api"]
 
 [[rules]]
 id = "jenkins-credentials"
@@ -64,16 +73,123 @@ description = "Potential Jenkins credentials in config"
 regex = '''(?i)(jenkins[_-]?(password|user|secret))\s*[:=]\s*['"]?([^'"\s]{8,})['"]?'''
 secretGroup = 3
 
-[[rules]]
-id = "generic-api-key"
-description = "Generic API Key"
-regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"]?([0-9a-zA-Z_\-]{20,})['"]?'''
-secretGroup = 2
-entropy = 3.0
+# ============================================================================
+# Generic credential detection rules (from Typeform gitleaks-config)
+# https://github.com/Typeform/gitleaks-config
+# ============================================================================
 
 [[rules]]
-id = "bearer-token"
-description = "Bearer Token in Authorization Headers"
-regex = '''(?i)authorization\s*[:=]\s*['"]?bearer\s+([0-9a-zA-Z\-_\.]{20,})['"]?'''
+description = "Authorization Bearer tokens"
+id = "authorization-bearer-token"
+regex = '''(?i)Bearer(?:\s)+(\S{8,})'''
+secretGroup = 1
+entropy = 3.8
+tags = ["key", "HTTP", "bearer"]
+
+[[rules]]
+description = "Hardcoded credentials in Go files"
+id = "credentials-go"
+path = '''(.*?)\.go$'''
+regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:\w|\s*?)(?:=|:=)(?:\s*?)["'`](.{4,120}?)["'`]'''
+secretGroup = 1
+entropy = 3
+tags = ["credentials", "hardcoded", "go"]
+
+[[rules]]
+description = "Hardcoded credentials in JavaScript or TypeScript files"
+id = "credentials-javascript"
+path = '''(.*?)\.(?:j|t)s$'''
+regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:\w|\s*?)(?:=){1}(?:\s{0,10})["'`](.*?)["'`]'''
+secretGroup = 1
+entropy = 3
+tags = ["credentials", "hardcoded", "js"]
+
+[[rules]]
+description = "Hardcoded credentials in Python files"
+id = "credentials-python"
+path = '''(.*?)\.py$'''
+regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:.{0,20})(?:=){1}(?:\s)*?["'](.{4,120})["']'''
+secretGroup = 1
+entropy = 3
+tags = ["credentials", "hardcoded", "python"]
+
+[[rules]]
+description = "Hardcoded credentials in Shell scripts"
+id = "credentials-shell"
+path = '''(.*?)\.(sh|bash|zsh)$'''
+regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:.{0,20})(?:=){1}(?:\s)*?["']?(.{4,120})["']?'''
+secretGroup = 1
+entropy = 3
+tags = ["credentials", "hardcoded", "shell"]
+
+[[rules]]
+description = "Hardcoded credentials in YAML files (quoted)"
+id = "credentials-yaml-quoted"
+path = '''(.*?)\.ya?ml$'''
+regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:.{0,20})(?::){1}(?:\s{0,10})(?:["'](.{4,120})["'])'''
+secretGroup = 1
+entropy = 3
+tags = ["credentials", "hardcoded", "yaml"]
+[rules.allowlist]
+description = "Skip YAML variables and encrypted values"
+regexes = [
+  '''\${(?:.)+}''',
+  '''{{(?:.)*?}}''',
+  '''ENC\[AES256_GCM,data:''',
+]
+
+[[rules]]
+description = "Hardcoded credentials in YAML files (unquoted)"
+id = "credentials-yaml-unquoted"
+path = '''(.*?)\.ya?ml$'''
+regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:\w|\s*?)(?::){1}(?:\s*?)((?:\w|\S)+)'''
 secretGroup = 1
 entropy = 3.5
+tags = ["credentials", "hardcoded", "yaml"]
+[rules.allowlist]
+description = "Skip YAML variables and template values"
+regexes = [
+  ''':$''',
+  '''\${(?:.)+}''',
+  '''{{(?:.)*?}}''',
+  '''={{$''',
+]
+
+[[rules]]
+description = "Hardcoded credentials in Terraform files"
+id = "credentials-terraform"
+path = '''(.*?)\.tf$'''
+regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:.{0,20})(?:=){1}(?:\s)*?"(.{4,120})"'''
+secretGroup = 1
+entropy = 3
+tags = ["credentials", "hardcoded", "terraform"]
+[rules.allowlist]
+description = "Skip variable substitution"
+regexes = [
+  '''\${(?:.)*?}''',
+]
+
+# ============================================================================
+# Database connection strings
+# ============================================================================
+
+[[rules]]
+id = "mysql-connection-string"
+description = "MySQL connection string with credentials"
+regex = '''mysql://([^:]+):([^@]+)@[^/]+/'''
+secretGroup = 2
+tags = ["database", "mysql"]
+
+[[rules]]
+id = "postgres-connection-string"
+description = "PostgreSQL connection string with credentials"
+regex = '''postgres(?:ql)?://([^:]+):([^@]+)@[^/]+/'''
+secretGroup = 2
+tags = ["database", "postgres"]
+
+[[rules]]
+id = "mongodb-connection-string"
+description = "MongoDB connection string with credentials"
+regex = '''mongodb(?:\+srv)?://([^:]+):([^@]+)@'''
+secretGroup = 2
+tags = ["database", "mongodb"]
