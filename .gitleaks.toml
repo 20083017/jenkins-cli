@@ -4,15 +4,20 @@
 
 title = "gitleaks config for jenkins-cli"
 
+# Require gitleaks v8.25.0+ for compatibility with default rules
+minVersion = "v8.25.0"
+
 [extend]
 # Extend the base config with all default rules
 useDefault = true
 
-[allowlist]
+[[allowlists]]
 description = "Allowlist for test fixtures and known false positives"
 regexTarget = "line"
 
 # Paths to exclude from scanning
+# NOTE: Broad exclusions should be reviewed periodically. Consider using
+# .gitleaksignore with fingerprints for specific false positives instead.
 paths = [
   '''\.gitleaks\.toml$''',
   '''(.*?)(jpg|gif|doc|pdf|bin|png|svg)$''',
@@ -27,13 +32,14 @@ paths = [
   '''node_modules\/''',
   '''vendor\/''',
   '''\.tmp-jk-e2e\/''',
-  '''docs\/.*\.md$''',
+  # e2e test infrastructure - contains intentional test credentials
+  '''hack/e2e/.*''',
 ]
 
 # Common test values and patterns that are not real secrets
+# IMPORTANT: Avoid adding real-looking passwords here. Use path exclusions
+# or .gitleaksignore fingerprints for specific files instead.
 regexes = [
-  '''password123''',
-  '''admin123''',           # e2e test Jenkins password (hack/e2e/up.sh)
   '''test-api-key''',
   '''fake-token''',
   '''dummy-secret''',
@@ -130,7 +136,7 @@ regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:.{0,20})(?::){1}(?:\s{0,
 secretGroup = 1
 entropy = 3
 tags = ["credentials", "hardcoded", "yaml"]
-[rules.allowlist]
+[[rules.allowlists]]
 description = "Skip YAML variables and encrypted values"
 regexes = [
   '''\${(?:.)+}''',
@@ -146,7 +152,7 @@ regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:\w|\s*?)(?::){1}(?:\s*?)
 secretGroup = 1
 entropy = 3.5
 tags = ["credentials", "hardcoded", "yaml"]
-[rules.allowlist]
+[[rules.allowlists]]
 description = "Skip YAML variables and template values"
 regexes = [
   ''':$''',
@@ -163,7 +169,7 @@ regex = '''(?i)(?:secret|key|password|pwd|pass|token)(?:.{0,20})(?:=){1}(?:\s)*?
 secretGroup = 1
 entropy = 3
 tags = ["credentials", "hardcoded", "terraform"]
-[rules.allowlist]
+[[rules.allowlists]]
 description = "Skip variable substitution"
 regexes = [
   '''\${(?:.)*?}''',
@@ -206,7 +212,7 @@ regex = '''([a-zA-Z0-9_-]+):([^@\s]{8,})@[a-zA-Z0-9.-]+'''
 secretGroup = 2
 entropy = 2.5
 tags = ["credentials", "auth-tuple"]
-[rules.allowlist]
+[[rules.allowlists]]
 description = "Skip email-like patterns and known safe patterns"
 regexes = [
   '''@gmail\.com''',
@@ -222,7 +228,7 @@ regex = '''(?i)["'](?:secret|key|password|pwd|pass|token|api_key|apikey|auth)["'
 secretGroup = 1
 entropy = 3
 tags = ["credentials", "hardcoded", "json"]
-[rules.allowlist]
+[[rules.allowlists]]
 description = "Skip package manifests and lock files"
 paths = [
   '''package\.json$''',
@@ -239,7 +245,7 @@ regex = '''(?i)(?:secret|key|password|pwd|pass|token|api_key|apikey)(?:\w*)=["']
 secretGroup = 1
 entropy = 2.5
 tags = ["credentials", "hardcoded", "env"]
-[rules.allowlist]
+[[rules.allowlists]]
 description = "Skip example env files and placeholders"
 paths = [
   '''\.env\.example$''',
