@@ -54,3 +54,8 @@ coverage.html
 .codex/
 .aider/
 .agent-mail/
+
+# Python virtual environments
+.venv*/
+venv/
+.venv/
