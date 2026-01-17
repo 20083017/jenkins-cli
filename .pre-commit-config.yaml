@@ -10,6 +10,7 @@ repos:
     rev: v8.24.2
     hooks:
       - id: gitleaks
+        args: ['--config=.gitleaks.toml']
 
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
