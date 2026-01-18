@@ -107,6 +107,12 @@ release:
     brew install avivsinai/tap/jenkins-cli
     ```
 
+    ### Scoop (Windows)
+    ```powershell
+    scoop bucket add avivsinai https://github.com/avivsinai/scoop-bucket
+    scoop install jenkins-cli
+    ```
+
     ### Go Install
     ```bash
     go install github.com/avivsinai/jenkins-cli/cmd/jk@{{ .Tag }}
@@ -132,3 +138,17 @@ brews:
       bin.install "jk"
     test: |
       system "#{bin}/jk", "version"
+
+scoops:
+  - name: jenkins-cli
+    repository:
+      owner: avivsinai
+      name: scoop-bucket
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: bucket
+    homepage: https://github.com/avivsinai/jenkins-cli
+    description: "CLI for Jenkins - GitHub CLI-style workflows for Jenkins controllers"
+    license: MIT
+    commit_author:
+      name: github-actions[bot]
+      email: github-actions[bot]@users.noreply.github.com
