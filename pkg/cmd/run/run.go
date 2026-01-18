@@ -618,9 +618,9 @@ func executeRunList(ctx context.Context, client *jenkins.Client, jobPath string,
 					// Some builds are in output; cursor points to last one
 					out.NextCursor = encodeRunCursor(normalizeJobPath(jobPath), lastBuildInOutput)
 				} else if len(originalBuilds) > 0 {
-					// All builds were pushed out by queued items; cursor points to first build
-					// so next page returns builds starting from the beginning
-					out.NextCursor = encodeRunCursor(normalizeJobPath(jobPath), originalBuilds[0].Number)
+					// All builds were pushed out by queued items; cursor uses first build + 1
+					// because cursor semantics are exclusive (skips Number >= cutoff)
+					out.NextCursor = encodeRunCursor(normalizeJobPath(jobPath), originalBuilds[0].Number+1)
 				}
 			}
 		}

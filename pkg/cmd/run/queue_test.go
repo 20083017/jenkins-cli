@@ -225,7 +225,7 @@ func TestCursorRecomputationWithQueuedItems(t *testing.T) {
 			description:         "Cursor should point to build #11 (last build in output)",
 		},
 		{
-			name: "all builds pushed out - cursor points to first build",
+			name: "all builds pushed out - cursor points to first build + 1",
 			queuedItems: []runListItem{
 				{ID: "job/q100", Number: 0, Status: "queued"},
 				{ID: "job/q101", Number: 0, Status: "queued"},
@@ -236,8 +236,8 @@ func TestCursorRecomputationWithQueuedItems(t *testing.T) {
 				{ID: "job/11", Number: 11, Status: "success"},
 			},
 			limit:               2, // [q100, q101] - all builds cut off
-			expectedCursorBuild: 12,
-			description:         "Cursor should point to build #12 (first build that was pushed out)",
+			expectedCursorBuild: 13,
+			description:         "Cursor should be #13 (first build + 1) so next page includes #12",
 		},
 		{
 			name: "one build remains after truncation",
@@ -278,7 +278,7 @@ func TestCursorRecomputationWithQueuedItems(t *testing.T) {
 				if lastBuildInOutput > 0 {
 					cursorBuild = lastBuildInOutput
 				} else if len(originalBuilds) > 0 {
-					cursorBuild = originalBuilds[0].Number
+					cursorBuild = originalBuilds[0].Number + 1
 				}
 			}
 
