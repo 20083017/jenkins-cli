@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -97,15 +98,16 @@ type queueExecutable struct {
 }
 
 type runListOptions struct {
-	Limit        int
-	Cursor       string
-	Filters      []filter.Filter
-	Since        *time.Time
-	SelectFields []string
-	GroupBy      string
-	Aggregation  string
-	WithMeta     bool
-	AllowRegex   bool
+	Limit         int
+	Cursor        string
+	Filters       []filter.Filter
+	Since         *time.Time
+	SelectFields  []string
+	GroupBy       string
+	Aggregation   string
+	WithMeta      bool
+	AllowRegex    bool
+	IncludeQueued bool
 }
 
 type runInspection struct {
@@ -457,15 +459,16 @@ Related commands:
 
 func newRunListCmd(f *cmdutil.Factory) *cobra.Command {
 	var (
-		limit       int
-		cursor      string
-		filterArgs  []string
-		sinceArg    string
-		selectArg   string
-		groupBy     string
-		aggregation string
-		withMeta    bool
-		enableRegex bool
+		limit         int
+		cursor        string
+		filterArgs    []string
+		sinceArg      string
+		selectArg     string
+		groupBy       string
+		aggregation   string
+		withMeta      bool
+		enableRegex   bool
+		includeQueued bool
 	)
 
 	cmd := &cobra.Command{
@@ -517,15 +520,16 @@ func newRunListCmd(f *cmdutil.Factory) *cobra.Command {
 			}
 
 			opts := runListOptions{
-				Limit:        limit,
-				Cursor:       cursor,
-				Filters:      parsedFilters,
-				Since:        since,
-				SelectFields: selectFields,
-				GroupBy:      groupBy,
-				Aggregation:  agg,
-				WithMeta:     withMeta,
-				AllowRegex:   enableRegex,
+				Limit:         limit,
+				Cursor:        cursor,
+				Filters:       parsedFilters,
+				Since:         since,
+				SelectFields:  selectFields,
+				GroupBy:       groupBy,
+				Aggregation:   agg,
+				WithMeta:      withMeta,
+				AllowRegex:    enableRegex,
+				IncludeQueued: includeQueued,
 			}
 
 			output, err := executeRunList(cmd.Context(), client, args[0], opts)
@@ -548,6 +552,7 @@ func newRunListCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&aggregation, "agg", "count", "Aggregation function for grouped results: count, first, last")
 	cmd.Flags().BoolVar(&withMeta, "with-meta", false, "Include metadata in JSON output")
 	cmd.Flags().BoolVar(&enableRegex, "regex", false, "Enable regular expression matching for filters")
+	cmd.Flags().BoolVar(&includeQueued, "include-queued", false, "Include queued (not yet started) builds in output")
 
 	return cmd
 }
@@ -582,7 +587,124 @@ func executeRunList(ctx context.Context, client *jenkins.Client, jobPath string,
 	}
 
 	out, _, err := processRunList(jobPath, opts, resp.Builds, requireArtifacts, requireParams, requireCauses)
+	if err != nil {
+		return out, err
+	}
+
+	// Prepend queued items if requested
+	if opts.IncludeQueued {
+		queuedItems, qErr := fetchQueuedItemsForJob(ctx, client, jobPath)
+		if qErr != nil {
+			jklog.L().Debug().Err(qErr).Msg("failed to fetch queued items")
+		} else if len(queuedItems) > 0 {
+			originalBuilds := out.Items
+			out.Items = append(queuedItems, out.Items...)
+
+			// Re-apply limit to combined list (queued items + builds)
+			if len(out.Items) > opts.Limit {
+				out.Items = out.Items[:opts.Limit]
+
+				// Recompute cursor based on what's actually returned.
+				// Find the last build (Number > 0) in the truncated output.
+				var lastBuildInOutput int64
+				for i := len(out.Items) - 1; i >= 0; i-- {
+					if out.Items[i].Number > 0 {
+						lastBuildInOutput = out.Items[i].Number
+						break
+					}
+				}
+
+				if lastBuildInOutput > 0 {
+					// Some builds are in output; cursor points to last one
+					out.NextCursor = encodeRunCursor(normalizeJobPath(jobPath), lastBuildInOutput)
+				} else if len(originalBuilds) > 0 {
+					// All builds were pushed out by queued items; cursor points to first build
+					// so next page returns builds starting from the beginning
+					out.NextCursor = encodeRunCursor(normalizeJobPath(jobPath), originalBuilds[0].Number)
+				}
+			}
+		}
+	}
+
 	return out, err
+}
+
+// queueListResponse matches the Jenkins queue API response structure
+type queueListResponse struct {
+	Items []queueListItem `json:"items"`
+}
+
+type queueListItem struct {
+	ID           int64        `json:"id"`
+	Why          string       `json:"why"`
+	InQueueSince int64        `json:"inQueueSince"`
+	Task         queueTaskRef `json:"task"`
+}
+
+type queueTaskRef struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+// fetchQueuedItemsForJob fetches queue items matching the given job path
+func fetchQueuedItemsForJob(ctx context.Context, client *jenkins.Client, jobPath string) ([]runListItem, error) {
+	req := client.NewRequest().SetQueryParam("tree", "items[id,task[name,url],why,inQueueSince]")
+	if ctx != nil {
+		req.SetContext(ctx)
+	}
+
+	var resp queueListResponse
+	if _, err := client.Do(req, http.MethodGet, "/queue/api/json", &resp); err != nil {
+		return nil, err
+	}
+
+	normalized := normalizeJobPath(jobPath)
+	var items []runListItem
+
+	for _, qItem := range resp.Items {
+		// Match job by checking if the task URL contains the job path
+		taskPath := extractJobPathFromURL(qItem.Task.URL)
+		if normalizeJobPath(taskPath) != normalized {
+			continue
+		}
+
+		item := runListItem{
+			ID:        fmt.Sprintf("%s/q%d", normalized, qItem.ID),
+			Number:    0, // Queued items don't have a build number yet
+			Status:    "queued",
+			QueueID:   qItem.ID,
+			StartTime: formatTimestamp(qItem.InQueueSince),
+			Fields: map[string]any{
+				"queueReason": qItem.Why,
+			},
+		}
+		items = append(items, item)
+	}
+
+	return items, nil
+}
+
+// extractJobPathFromURL extracts the job path from a Jenkins job URL.
+// It handles URL-encoded segments (e.g., spaces as %20, slashes in branch names).
+func extractJobPathFromURL(rawURL string) string {
+	// URL format: http://jenkins/job/Folder/job/SubFolder/job/JobName/
+	// We need to extract: Folder/SubFolder/JobName
+	parts := strings.Split(rawURL, "/job/")
+	if len(parts) < 2 {
+		return ""
+	}
+	var pathParts []string
+	for _, part := range parts[1:] {
+		cleaned := strings.TrimSuffix(strings.TrimSuffix(part, "/"), "/")
+		if cleaned != "" {
+			// Decode URL-encoded characters (e.g., %20 -> space, %2F -> /)
+			if decoded, err := url.PathUnescape(cleaned); err == nil {
+				cleaned = decoded
+			}
+			pathParts = append(pathParts, cleaned)
+		}
+	}
+	return strings.Join(pathParts, "/")
 }
 
 func buildRunListTree(fetchLimit int, includeArtifacts, includeParameters, includeCauses bool) string {
@@ -1019,11 +1141,20 @@ func renderRunListHuman(cmd *cobra.Command, output runListOutput, opts runListOp
 		}
 	} else {
 		for _, item := range output.Items {
+			// For queued items: show "queued" instead of #0, show status instead of empty result
+			displayNum := fmt.Sprintf("#%d", item.Number)
+			displayStatus := strings.ToUpper(item.Result)
+			if item.Number == 0 && item.Status == "queued" {
+				displayNum = fmt.Sprintf("q%d", item.QueueID)
+				displayStatus = "QUEUED"
+			} else if displayStatus == "" {
+				displayStatus = strings.ToUpper(item.Status)
+			}
 			_, _ = fmt.Fprintf(
 				w,
-				"#%d\t%s\t%s\t%s\n",
-				item.Number,
-				strings.ToUpper(item.Result),
+				"%s\t%s\t%s\t%s\n",
+				displayNum,
+				displayStatus,
 				item.StartTime,
 				shared.DurationString(item.DurationMs),
 			)
