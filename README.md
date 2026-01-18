@@ -34,7 +34,7 @@ brew install avivsinai/tap/jk
 
 ```powershell
 scoop bucket add avivsinai https://github.com/avivsinai/scoop-bucket
-scoop install jenkins-cli
+scoop install jk
 ```
 
 ### Go Install

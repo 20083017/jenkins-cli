@@ -110,7 +110,7 @@ release:
     ### Scoop (Windows)
     ```powershell
     scoop bucket add avivsinai https://github.com/avivsinai/scoop-bucket
-    scoop install jenkins-cli
+    scoop install jk
     ```
 
     ### Go Install
@@ -140,7 +140,7 @@ brews:
       system "#{bin}/jk", "version"
 
 scoops:
-  - name: jenkins-cli
+  - name: jk
     repository:
       owner: avivsinai
       name: scoop-bucket
