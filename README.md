@@ -24,7 +24,20 @@
 
 ## Installation
 
-### Go Install (Recommended)
+### Homebrew (macOS/Linux)
+
+```bash
+brew install avivsinai/tap/jenkins-cli
+```
+
+### Scoop (Windows)
+
+```powershell
+scoop bucket add avivsinai https://github.com/avivsinai/scoop-bucket
+scoop install jenkins-cli
+```
+
+### Go Install
 
 ```bash
 # Install latest version
