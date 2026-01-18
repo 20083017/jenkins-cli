@@ -27,7 +27,7 @@
 ### Homebrew (macOS/Linux)
 
 ```bash
-brew install avivsinai/tap/jenkins-cli
+brew install avivsinai/tap/jk
 ```
 
 ### Scoop (Windows)

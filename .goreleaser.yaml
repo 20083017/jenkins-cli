@@ -104,7 +104,7 @@ release:
 
     ### Homebrew (macOS/Linux)
     ```bash
-    brew install avivsinai/tap/jenkins-cli
+    brew install avivsinai/tap/jk
     ```
 
     ### Scoop (Windows)
@@ -122,7 +122,7 @@ release:
     Download the appropriate binary for your platform from the assets below.
 
 brews:
-  - name: jenkins-cli
+  - name: jk
     repository:
       owner: avivsinai
       name: homebrew-tap
