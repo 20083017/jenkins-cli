@@ -102,6 +102,11 @@ release:
 
     ## Installation
 
+    ### Homebrew (macOS/Linux)
+    ```bash
+    brew install avivsinai/tap/jenkins-cli
+    ```
+
     ### Go Install
     ```bash
     go install github.com/avivsinai/jenkins-cli/cmd/jk@{{ .Tag }}
@@ -110,18 +115,20 @@ release:
     ### Binary Downloads
     Download the appropriate binary for your platform from the assets below.
 
-# Homebrew tap (disabled - not set up yet)
-# Uncomment and configure HOMEBREW_TAP_GITHUB_TOKEN secret when ready
-# brews:
-#   - repository:
-#       owner: avivsinai
-#       name: homebrew-tap
-#       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-#     directory: Formula
-#     homepage: https://github.com/avivsinai/jenkins-cli
-#     description: "GitHub CLI-style workflows for Jenkins controllers"
-#     license: MIT
-#     test: |
-#       system "#{bin}/jk version"
-#     install: |
-#       bin.install "jk"
+brews:
+  - name: jenkins-cli
+    repository:
+      owner: avivsinai
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: https://github.com/avivsinai/jenkins-cli
+    description: "CLI for Jenkins - GitHub CLI-style workflows for Jenkins controllers"
+    license: MIT
+    commit_author:
+      name: github-actions[bot]
+      email: github-actions[bot]@users.noreply.github.com
+    install: |
+      bin.install "jk"
+    test: |
+      system "#{bin}/jk", "version"
