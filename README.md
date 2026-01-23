@@ -61,6 +61,18 @@ cd jenkins-cli
 make build   # produces ./bin/jk
 ```
 
+### AI Coding Skill
+
+Install the `jk` skill for Claude Code or Codex CLI:
+
+```bash
+# Via skild.sh (registry-based)
+npx skild install @avivsinai/jk
+
+# Via skills.sh (GitHub-based)
+npx skills add avivsinai/jenkins-cli
+```
+
 ## Quickstart
 
 Find jobs fast with `jk search` (alias for `jk run search`) before drilling into specific pipelines.
