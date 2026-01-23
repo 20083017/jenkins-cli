@@ -22,8 +22,22 @@ LDFLAGS := -s -w \
 	-X github.com/avivsinai/jenkins-cli/internal/build.commitFromLdflags=$(COMMIT) \
 	-X github.com/avivsinai/jenkins-cli/internal/build.dateFromLdflags=$(BUILD_DATE)
 
-.PHONY: build
+.PHONY: build sync-skills check-skills
 build: $(BIN_DIR)/jk
+
+# Skill sync: .claude/skills/ is source of truth
+sync-skills:
+	@echo "Syncing skills from .claude/skills/ to .codex/skills/ and skills/..."
+	@mkdir -p .codex/skills/jk skills/jk
+	@cp -R .claude/skills/jk/* .codex/skills/jk/
+	@cp -R .claude/skills/jk/* skills/jk/
+	@echo "✓ Skills synced"
+
+check-skills:
+	@echo "Checking skill sync..."
+	@diff -rq .claude/skills/jk .codex/skills/jk || (echo "❌ .codex/skills/jk out of sync" && exit 1)
+	@diff -rq .claude/skills/jk skills/jk || (echo "❌ skills/jk out of sync" && exit 1)
+	@echo "✓ Skills in sync"
 
 $(BIN_DIR)/jk: $(SOURCES) go.mod go.sum
 	@mkdir -p $(BIN_DIR)
