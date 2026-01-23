@@ -49,9 +49,14 @@ coverage.html
 ~
 ~/
 
-# AI tool configuration directories (should stay local)
-.claude/
-.codex/
+# AI tool configuration directories (most should stay local)
+# Track skills subdirectories for distribution
+.claude/**
+!.claude/skills/
+!.claude/skills/**
+.codex/**
+!.codex/skills/
+!.codex/skills/**
 .aider/
 .agent-mail/
 
