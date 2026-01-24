@@ -65,13 +65,56 @@ make build   # produces ./bin/jk
 
 Install the `jk` skill for Claude Code or Codex CLI:
 
-```bash
-# Via skild.sh (registry-based)
-npx skild install @avivsinai/jk
+<details open>
+<summary><b>Via add-skill (Recommended)</b></summary>
 
-# Via skills.sh (GitHub-based)
+```bash
+npx add-skill avivsinai/jenkins-cli
+```
+
+</details>
+
+<details>
+<summary><b>Via skild registry</b></summary>
+
+```bash
+npx skild install @avivsinai/jk
+```
+
+</details>
+
+<details>
+<summary><b>Via skills.sh</b></summary>
+
+```bash
 npx skills add avivsinai/jenkins-cli
 ```
+
+</details>
+
+<details>
+<summary><b>Via Skills Marketplace</b></summary>
+
+Add the marketplace once, then install and discover more skills:
+
+```bash
+/plugin marketplace add avivsinai/skills-marketplace
+/plugin install jk@avivsinai-marketplace
+```
+
+Browse available skills at [avivsinai/skills-marketplace](https://github.com/avivsinai/skills-marketplace).
+
+</details>
+
+<details>
+<summary><b>Direct from repo</b></summary>
+
+```bash
+git clone https://github.com/avivsinai/jenkins-cli.git
+cp -r jenkins-cli/.claude/skills/jk ~/.claude/skills/
+```
+
+</details>
 
 ## Quickstart
 
