@@ -11,15 +11,24 @@ metadata:
 
 `jk` is a GitHub CLI–style interface for **Jenkins controllers**. It provides modern, scriptable workflows for developers and operators.
 
-## Prerequisites
+## Dependency Check
+
+**Before executing any `jk` command**, verify the CLI is installed:
 
 ```bash
-# Install via Homebrew
-brew install avivsinai/tap/jk
-
-# Or via Go
-go install github.com/avivsinai/jenkins-cli/cmd/jk@latest
+jk --version
 ```
+
+If the command fails or `jk` is not found, install it using one of these methods:
+
+| Platform | Command |
+|----------|---------|
+| macOS/Linux | `brew install avivsinai/tap/jk` |
+| Windows | `scoop bucket add avivsinai https://github.com/avivsinai/scoop-bucket && scoop install jk` |
+| Go | `go install github.com/avivsinai/jenkins-cli/cmd/jk@latest` |
+| Binary | Download from [GitHub Releases](https://github.com/avivsinai/jenkins-cli/releases) |
+
+**Only proceed with `jk` commands after confirming installation succeeds.**
 
 ## Authentication
 
