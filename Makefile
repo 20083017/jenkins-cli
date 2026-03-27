@@ -22,22 +22,18 @@ LDFLAGS := -s -w \
 	-X github.com/avivsinai/jenkins-cli/internal/build.commitFromLdflags=$(COMMIT) \
 	-X github.com/avivsinai/jenkins-cli/internal/build.dateFromLdflags=$(BUILD_DATE)
 
-.PHONY: build sync-skills check-skills
+.PHONY: build check-skills
 build: $(BIN_DIR)/jk
 
-# Skill sync: .claude/skills/ is source of truth
-sync-skills:
-	@echo "Syncing skills from .claude/skills/ to .codex/skills/ and skills/..."
-	@mkdir -p .codex/skills/jk skills/jk
-	@cp -R .claude/skills/jk/* .codex/skills/jk/
-	@cp -R .claude/skills/jk/* skills/jk/
-	@echo "✓ Skills synced"
-
+# Skill integrity: skills/ is canonical, .claude/skills/ and .agents/skills/ are symlinks
 check-skills:
-	@echo "Checking skill sync..."
-	@diff -rq .claude/skills/jk .codex/skills/jk || (echo "❌ .codex/skills/jk out of sync" && exit 1)
-	@diff -rq .claude/skills/jk skills/jk || (echo "❌ skills/jk out of sync" && exit 1)
-	@echo "✓ Skills in sync"
+	@echo "Checking skill symlinks..."
+	@test -L .claude/skills/jk || (echo "❌ .claude/skills/jk is not a symlink" && exit 1)
+	@test -L .agents/skills/jk || (echo "❌ .agents/skills/jk is not a symlink" && exit 1)
+	@test "$$(readlink .claude/skills/jk)" = "../../skills/jk" || (echo "❌ .claude/skills/jk target is not ../../skills/jk" && exit 1)
+	@test "$$(readlink .agents/skills/jk)" = "../../skills/jk" || (echo "❌ .agents/skills/jk target is not ../../skills/jk" && exit 1)
+	@diff -rq skills/jk .claude/skills/jk || (echo "❌ .claude/skills/jk content mismatch" && exit 1)
+	@echo "✓ Skill symlinks valid"
 
 $(BIN_DIR)/jk: $(SOURCES) go.mod go.sum
 	@mkdir -p $(BIN_DIR)
