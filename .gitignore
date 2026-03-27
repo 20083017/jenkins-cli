@@ -54,9 +54,10 @@ coverage.html
 .claude/**
 !.claude/skills/
 !.claude/skills/**
-.codex/**
-!.codex/skills/
-!.codex/skills/**
+.codex/
+.agents/**
+!.agents/skills/
+!.agents/skills/**
 .aider/
 .agent-mail/
 
