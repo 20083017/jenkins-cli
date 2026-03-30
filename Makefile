@@ -105,3 +105,8 @@ pre-commit-check:
 pre-commit-update:
 	@command -v pre-commit >/dev/null 2>&1 || { echo "pre-commit not installed. Run: pip install pre-commit"; exit 1; }
 	pre-commit autoupdate
+
+.PHONY: release-skills
+release-skills:
+	@test -n "$(RELEASE_VERSION)" || (echo "usage: make release-skills RELEASE_VERSION=0.0.18" && exit 1)
+	./scripts/release-skills.sh "$(RELEASE_VERSION)"
