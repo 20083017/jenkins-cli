@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This is the master agent instruction file for this repository. Keep repository policy here. `AGENTS.md` exists only as a Codex compatibility shim and should contain only Codex-specific notes.
 
 ## Build & Test Commands
 
@@ -22,6 +22,12 @@ colima start --network-address
 export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
 make e2e
 ```
+
+## Required Checks
+
+- Run `make build` and `make test` before commit.
+- Run `make e2e` when Jenkins-facing behavior changes and Docker is available.
+- Run `gofmt -w` on touched Go packages.
 
 ## Architecture
 
@@ -75,6 +81,17 @@ main.go → jkcmd.Main() → root.NewCmdRoot(factory) → Cobra Execute()
 - **Formatting**: Run `gofmt -w` on touched packages
 - **Documentation**: Update `README.md` and `docs/spec.md` for user-facing changes
 - **New directories**: Update `docs/spec.md` before adding top-level directories
+
+## Release Contract
+
+- Release from `main` only; do not create manual GitHub releases.
+- A push to `main` updates the AvivSinai marketplace immediately for the `jk` skill.
+- For a versioned release, keep `CHANGELOG.md` and skill/plugin metadata on one version, then push the tag and let CI publish GitHub and Homebrew artifacts.
+
+## Documentation Expectations
+
+- User-facing changes should update `README.md` and, when relevant, `docs/spec.md` or `docs/api.md`.
+- Avoid adding new top-level directories without updating the docs first.
 
 ## Agent Discovery Patterns
 
