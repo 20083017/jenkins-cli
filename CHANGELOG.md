@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.23] - 2026-04-01
+
+### Changed
+- Simplified the GitHub release workflow to use `actions/setup-go`'s built-in module and build caching instead of a separate cache step, making tag reruns more reliable.
+
 ## [0.0.22] - 2026-04-01
 
 ### Fixed
