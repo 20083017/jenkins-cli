@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.22] - 2026-04-01
+
+### Fixed
+- Reworked macOS signing invocation so Linux CI, Jenkins-based end-to-end tests, and GoReleaser all call the helper through `bash` instead of relying on executable mode propagation through every checkout path.
+
 ## [0.0.21] - 2026-04-01
 
 ### Fixed

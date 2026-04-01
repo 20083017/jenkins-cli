@@ -38,7 +38,7 @@ check-skills:
 $(BIN_DIR)/jk: $(SOURCES) go.mod go.sum
 	@mkdir -p $(BIN_DIR)
 	$(GO) build -trimpath -ldflags "$(LDFLAGS)" -o $(BIN_DIR)/jk $(CMD)
-	@./scripts/sign-darwin-binary.sh "$(BIN_DIR)/jk"
+	@bash ./scripts/sign-darwin-binary.sh "$(BIN_DIR)/jk"
 
 .PHONY: tidy
 tidy:

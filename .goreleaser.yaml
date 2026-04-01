@@ -34,7 +34,7 @@ builds:
       - -trimpath
     hooks:
       post:
-        - ./scripts/sign-darwin-binary.sh "{{ .Path }}" "{{ .Os }}"
+        - bash ./scripts/sign-darwin-binary.sh "{{ .Path }}" "{{ .Os }}"
 
 archives:
   - id: jk-archive
