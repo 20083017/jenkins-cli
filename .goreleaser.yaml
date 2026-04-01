@@ -32,6 +32,9 @@ builds:
       - -X github.com/avivsinai/jenkins-cli/internal/build.dateFromLdflags={{.Date}}
     flags:
       - -trimpath
+    hooks:
+      post:
+        - ./scripts/sign-darwin-binary.sh "{{ .Path }}" "{{ .Os }}"
 
 archives:
   - id: jk-archive

@@ -118,10 +118,12 @@ func (s *Store) Set(key, value string) error {
 		return errors.New("secret store not initialized")
 	}
 
-	return s.kr.Set(keyring.Item{
-		Key:   key,
-		Data:  []byte(value),
-		Label: fmt.Sprintf("jk context %s token", key),
+	return s.withKeychainLock(func() error {
+		return s.kr.Set(keyring.Item{
+			Key:   key,
+			Data:  []byte(value),
+			Label: fmt.Sprintf("jk context %s token", key),
+		})
 	})
 }
 
@@ -131,7 +133,12 @@ func (s *Store) Get(key string) (string, error) {
 		return "", errors.New("secret store not initialized")
 	}
 
-	item, err := s.kr.Get(key)
+	var item keyring.Item
+	err := s.withKeychainLock(func() error {
+		var getErr error
+		item, getErr = s.kr.Get(key)
+		return getErr
+	})
 	if err != nil {
 		if errors.Is(err, keyring.ErrKeyNotFound) {
 			return "", os.ErrNotExist
@@ -148,7 +155,9 @@ func (s *Store) Delete(key string) error {
 		return errors.New("secret store not initialized")
 	}
 
-	err := s.kr.Remove(key)
+	err := s.withKeychainLock(func() error {
+		return s.kr.Remove(key)
+	})
 	if errors.Is(err, keyring.ErrKeyNotFound) {
 		return nil
 	}
@@ -279,4 +288,8 @@ func envEnabled(raw string) bool {
 	default:
 		return false
 	}
+}
+
+func (s *Store) withKeychainLock(fn func() error) error {
+	return withKeychainLock(fn)
 }

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.21] - 2026-04-01
+
+### Fixed
+- Serialized macOS keychain reads and writes behind an inter-process lock to prevent prompt storms when multiple `jk` processes access the same token concurrently.
+- Ad-hoc signed macOS binaries with the stable identifier `io.github.avivsinai.jk` in both local builds and GoReleaser artifacts so Keychain approvals survive Homebrew upgrades.
+
 ## [0.0.20] - 2026-03-31
 
 ### Changed

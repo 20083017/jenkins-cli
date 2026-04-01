@@ -60,6 +60,7 @@ coverage.html
 !.agents/skills/**
 .aider/
 .agent-mail/
+.amqrc
 
 # Python virtual environments
 .venv*/
