@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.25] - 2026-04-01
+
+### Fixed
+- Keyed manual release rerun concurrency by tag so rerunning one release tag cannot cancel a different release recovery run.
+
 ## [0.0.24] - 2026-04-01
 
 ### Fixed
