@@ -7,13 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.29] - 2026-04-05
 ### Fixed
 - Consolidated skill publishing into the release workflow so it no longer depends on tag-push events that `GITHUB_TOKEN` cannot trigger.
 - Pinned all GitHub Actions to commit SHAs across every workflow for supply-chain safety.
 - Added missing `timeout-minutes` and `concurrency` blocks to all workflows.
 - Standalone publish-skill workflow now accepts `workflow_dispatch` with an explicit `tag` input.
 
+## [0.0.29] - 2026-04-05
+
+### Added
+- Added `jk job create` for Bitbucket-backed Multibranch Pipeline jobs, including flags for Jenkinsfile path, credentials, branch discovery strategy, and pull request discovery.
+- Added `jk job config` to fetch raw `config.xml`, `jk job configure` to replace or patch it, and `jk job scan` to trigger multibranch rescans.
+- Added shared XML patch helpers plus targeted unit and end-to-end coverage for job creation, config round-trips, stdin/file updates, and scan triggering.
+
+### Fixed
+- Preserved literal `$` characters during XML replacement and rejected `--script-path` updates unless the target factory is `WorkflowBranchProjectFactory`.
+- Validated output flags before `job create`, `job config`, `job configure`, and `job scan` perform Jenkins-side effects, and removed stale references to a nonexistent `jk job delete` command.
+- Surfaced Jenkins response body details on create/config failures, preserved `--insecure` when `--ca-file` is also set, and accepted Jenkins `302` redirects for successful scan triggers.
+- Improved scan safety and diagnostics by validating multibranch targets before posting `/build?delay=0`, adding a clearer non-buildable-job error, setting required request content types, and aligning the e2e Jenkins image with the Bitbucket multibranch plugin.
 
 ## [0.0.28] - 2026-04-02
 ### Fixed

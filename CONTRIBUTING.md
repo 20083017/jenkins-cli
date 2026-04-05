@@ -77,7 +77,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 ### Local Development
 
 When building locally with `make build`:
-- If on a tagged commit: version shows the tag (e.g., `v0.1.0`)
+- If on a tagged commit: version shows the tag (e.g., `v0.0.29`)
 - If between tags: version shows `dev-<commit>[-dirty]` (e.g., `dev-9a63037-dirty`)
 
 Check your build version:
@@ -93,7 +93,7 @@ goreleaser release --snapshot --clean
 ls -la dist/
 ```
 
-This creates binaries in `dist/` with versions like `0.1.1-next+abc1234`.
+This creates binaries in `dist/` with versions like `0.0.30-next+abc1234`.
 
 ## Release process
 

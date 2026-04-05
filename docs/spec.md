@@ -29,13 +29,13 @@
 
 ## 4. Target Users & Workflows
 - **Application developer:** triggers or inspects pipeline runs, watches logs, fetches artifacts, inspects test results.
-- **Release engineer:** creates and maintains pipeline jobs, manages credentials, reruns failed stages.
+- **Release engineer:** creates and maintains multibranch pipeline jobs, inspects and patches `config.xml`, manages credentials, reruns failed stages.
 - **DevOps/SRE:** monitors queue health, node availability, plugin versions, controller metrics.
 - **Jenkins administrator:** applies configuration-as-code bundles, installs plugins, observes events.
 
 Key workflows the CLI must make trivial:
 1. Start a pipeline run with parameters and follow live stage/log progress.
-2. Create or update a pipeline job from a high-level spec or raw config XML.
+2. Create or update a multibranch pipeline job from Bitbucket inputs or raw `config.xml`.
 3. Manage secrets scoped to folders or the system store.
 4. Inspect the latest runs, download artifacts, and export test results.
 5. Observe queue latency, node capacity, and controller metrics in near real time.
@@ -47,9 +47,12 @@ Key workflows the CLI must make trivial:
   - `jk context ls|use|rm`, `jk whoami`.
   - Optional `jk auth status` to show crumb/token health.
 - **Jobs & pipeline management**
-  - List, view metadata, create (from high-level spec or config XML), copy, delete jobs.
+  - List and view metadata for Jenkins jobs.
+  - Create Bitbucket-backed Multibranch Pipeline jobs.
+  - Fetch raw `config.xml`, replace it from a file/stdin payload, or patch a Multibranch Pipeline Jenkinsfile path.
   - Support folders and multibranch job resolution via human-readable paths (e.g., `team/service/build`).
   - Trigger multibranch scans when allowed.
+  - Copy/delete jobs and high-level YAML import remain roadmap items.
 - **Runs**
   - Trigger builds with parameters and optional `--follow`.
   - List and filter runs by status/branch.
@@ -141,7 +144,7 @@ Key workflows the CLI must make trivial:
 | `auth`         | `jk auth login`, `jk auth status`, `jk auth logout`             | Stores contexts securely. |
 | `context`      | `jk context ls`, `jk context use`, `jk context rename`          | Config stored under `$XDG_CONFIG_HOME/jk/config.yaml`. |
 | `search`       | `jk search --job-glob '*ada*'`, `jk search --folder tools`      | Top-level alias for cross-job discovery (`run search`). |
-| `job`          | `jk job ls`, `jk job view`, `jk job create`, `jk job config`, `jk job configure`, `jk job scan`, `jk job import-config`, `jk job delete` | `jk job create` consumes high-level YAML when plugin present. |
+| `job`          | `jk job ls`, `jk job view`, `jk job create`, `jk job config`, `jk job configure`, `jk job scan` | `create` currently targets Bitbucket-backed Multibranch Pipeline jobs; `config` emits raw XML; `configure` supports `--file`, `--stdin`, or `--script-path`; `scan` is multibranch-only. |
 | `run`          | `jk run start`, `jk run ls`, `jk run search`, `jk run params`, `jk run view`, `jk run cancel`, `jk run rerun`, `jk run restart-from` | Capability flags printed in `jk run view`. |
 | `log`          | `jk log`, `jk log --follow`                                     | Snapshot default; `--follow` streams like `gh run view --log`. |
 | `artifact`     | `jk artifact ls`, `jk artifact download`                        | Glob filtering via `--pattern`. |
@@ -172,6 +175,12 @@ Key workflows the CLI must make trivial:
 - `pkg/cmdutil` provides the lightweight factory/exit wiring borrowed from `gh`'s `cmdutil`.
 - `pkg/iostreams` is a direct port of the GitHub CLI IO abstraction, ensuring identical TTY, colour, and pager behaviour.
 - Legacy `internal/cmd` package was removed to avoid drift; new codepaths must follow the gh-style layering.
+
+#### 9.2.2 Current job command flags
+- `jk job create <name>` supports `--folder`, `--description`, `--repo-owner`, `--repository`, `--script-path`, `--credentials`, `--bitbucket-url`, `--branch-strategy`, `--discover-origin-prs`, and `--discover-fork-prs`.
+- `jk job config <jobPath>` emits raw `config.xml` to stdout and does not currently support JSON or YAML output.
+- `jk job configure <jobPath>` supports raw replacement via `--file` or `--stdin`, and targeted Jenkinsfile path updates via `--script-path`.
+- `jk job scan <jobPath>` has no command-specific flags; it validates that the target is a Multibranch Pipeline job before posting `/build?delay=0`.
 
 ### 9.3 HTTP & Auth Flow
 1. Resolve server URL (ensuring trailing slash trimmed) and credentials from context or flags.
@@ -382,7 +391,8 @@ Key workflows the CLI must make trivial:
 |-----------------------------------------------------|------------------------------------------------------------------------|
 | `auth`, `context`, `config`                         | Client-side only                                                       |
 | `job ls`, `job view`, `job config`                  | `Overall/Read` + `Job/Read` (folder scoped)                            |
-| `job create`, `job configure`, `job import-config`, `job delete` | `Job/Create`, `Job/Configure`, `Job/Delete` (folder scoped) |
+| `job create`                                        | `Job/Create` + `Job/Configure` (folder scoped)                         |
+| `job configure`                                     | `Overall/Read` + `Job/Read` + `Job/Configure` (folder scoped)         |
 | `job scan`                                          | `Overall/Read` + `Job/Read` + `Job/Build` (folder scoped)             |
 | `run start`                                         | `Job/Build`                                                            |
 | `run cancel`                                        | `Job/Cancel` (or equivalent policy)                                   |
@@ -487,7 +497,7 @@ Key workflows the CLI must make trivial:
 - Add `--json` output and table renderer.
 - Build integration test harness against Jenkins LTS without companion plugin.
 - Ship `examples/parity-smoke.sh` demonstrating `jk` parity with `gh` workflows (login, job ls, run follow exit codes, artifact download, credential create).
-- Publish v0.1.0 preview release with documentation for supported commands.
+- Publish the initial preview release with documentation for supported commands.
 
 ### Phase 2 – Core Admin Features (Week 7-11)
 - Add credentials CRUD (direct Credentials API), node cordon/uncordon, plugin list/install (with confirmations), JCasC apply/export (existing endpoints).

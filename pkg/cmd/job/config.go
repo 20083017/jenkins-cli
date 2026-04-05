@@ -36,7 +36,16 @@ func newJobConfigCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config <jobPath>",
 		Short: "Fetch a job's raw config.xml",
-		Args:  cobra.ExactArgs(1),
+		Long: "Fetch a job's raw config.xml.\n\n" +
+			"This command writes the XML payload directly to stdout so it can be\n" +
+			"piped into tools like `xmllint`, redirected to a file, or round-tripped\n" +
+			"back into `jk job configure --stdin`.\n\n" +
+			"Structured output flags are not supported for this command; output is\n" +
+			"always raw XML.",
+		Example: "  jk job config platform/services/auth-relay\n" +
+			"  jk job config platform/services/auth-relay > auth-relay.config.xml\n" +
+			"  jk job config platform/services/auth-relay | xmllint --format -",
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := shared.ValidateOutputFlags(cmd); err != nil {
 				return err
@@ -76,6 +85,9 @@ func newJobConfigureCmd(f *cmdutil.Factory) *cobra.Command {
 		Long: "Update a job's config.xml.\n\n" +
 			"Use `--file` or `--stdin` to post a full raw XML replacement, or use\n" +
 			"`--script-path` to fetch, patch, and post a Multibranch Pipeline config.",
+		Example: "  jk job configure platform/services/auth-relay --file auth-relay.config.xml\n" +
+			"  cat auth-relay.config.xml | jk job configure platform/services/auth-relay --stdin\n" +
+			"  jk job configure platform/services/auth-relay --script-path services/auth-relay/Jenkinsfile",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := shared.ValidateOutputFlags(cmd); err != nil {
@@ -159,7 +171,11 @@ func newJobScanCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "scan <jobPath>",
 		Short: "Trigger a Multibranch Pipeline rescan",
-		Args:  cobra.ExactArgs(1),
+		Long: "Trigger a Multibranch Pipeline rescan.\n\n" +
+			"The command validates that the target job is a Multibranch Pipeline\n" +
+			"before posting the Jenkins scan trigger endpoint.",
+		Example: "  jk job scan platform/services/auth-relay",
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := shared.ValidateOutputFlags(cmd); err != nil {
 				return err
