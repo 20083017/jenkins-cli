@@ -173,6 +173,7 @@ jk job scan platform/services/auth-relay
 - [Specification](docs/spec.md) - Architecture and design decisions
 - [API Contracts](docs/api.md) - JSON/YAML schemas for structured output
 - [Agent Cookbook](docs/agent-cookbook.md) - Automation recipes and examples
+- [Platform Delivery Assets](docs/platform/README.md) - Execution checklist, quality policies, pipeline templates, and operations guidance
 - [Changelog](CHANGELOG.md) - Release notes and migration guidance
 
 ## Security
