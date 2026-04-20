@@ -64,15 +64,13 @@ install_with_brew() {
   fi
   brew update
   brew install "${packages[@]}"
-  if command -v brew >/dev/null 2>&1; then
-    local llvm_prefix
-    llvm_prefix="$(brew --prefix llvm 2>/dev/null || true)"
-    if [[ -n "$llvm_prefix" ]]; then
-      cat <<EOFMSG
+  local llvm_prefix
+  llvm_prefix="$(brew --prefix llvm 2>/dev/null || true)"
+  if [[ -n "$llvm_prefix" ]]; then
+    cat <<EOFMSG
 Add LLVM tools to PATH if needed:
   export PATH="$llvm_prefix/bin:\$PATH"
 EOFMSG
-    fi
   fi
 }
 

@@ -12,9 +12,9 @@ This folder captures the delivery assets for the Kubernetes + Jenkins + agent ro
 
 ## Scripts
 
-- `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-platform-deps.sh`
-- `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/bootstrap-cpp-quality.sh`
-- `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/check-cpp-quality.sh`
-- `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-jenkins-plugins.sh`
+- `scripts/platform/install-platform-deps.sh`
+- `scripts/platform/bootstrap-cpp-quality.sh`
+- `scripts/platform/check-cpp-quality.sh`
+- `scripts/platform/install-jenkins-plugins.sh`
 
-These scripts are idempotent templates intended to be adapted for the target Jenkins controller, Kubernetes cluster, and C++ repository before execution in production.
+These scripts are starter templates intended to be adapted for the target Jenkins controller, Kubernetes cluster, and C++ repository before execution in production.

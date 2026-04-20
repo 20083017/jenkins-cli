@@ -48,4 +48,7 @@ if ! command -v jenkins-plugin-cli >/dev/null 2>&1; then
   exit 1
 fi
 
-jenkins-plugin-cli --plugins "${PLUGINS[*]}"
+plugins_file="$(mktemp)"
+trap 'rm -f "$plugins_file"' EXIT
+printf '%s\n' "${PLUGINS[@]}" > "$plugins_file"
+jenkins-plugin-cli --plugin-file "$plugins_file"

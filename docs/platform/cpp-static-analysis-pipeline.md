@@ -1,6 +1,6 @@
 # C++ Static Analysis Pipeline Template
 
-This template assumes Jenkins declarative pipelines, a CMake-based project, and the helper scripts shipped in `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform`.
+This template assumes Jenkins declarative pipelines, a CMake-based project, and the helper scripts shipped in `scripts/platform` from the checked-out repository workspace.
 
 ## Jenkinsfile Template
 
@@ -29,20 +29,20 @@ pipeline {
 
     stage('Bootstrap Tooling') {
       steps {
-        sh '/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-platform-deps.sh --mode quality'
+        sh './scripts/platform/install-platform-deps.sh --mode quality'
       }
     }
 
     stage('Bootstrap Policy Files') {
       steps {
-        sh '/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/bootstrap-cpp-quality.sh --target-dir "$WORKSPACE" --header-filter ".*"'
+        sh './scripts/platform/bootstrap-cpp-quality.sh --target-dir "$WORKSPACE" --header-filter ".*"'
       }
     }
 
     stage('Format and Static Analysis') {
       steps {
         sh '''
-          /home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/check-cpp-quality.sh \
+          ./scripts/platform/check-cpp-quality.sh \
             --source-dir "$WORKSPACE" \
             --build-dir "$WORKSPACE/${BUILD_DIR}" \
             --cmake-generator "$CMAKE_GENERATOR" \

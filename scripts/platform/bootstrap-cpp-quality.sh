@@ -73,7 +73,7 @@ Checks: >
 WarningsAsErrors: >
   bugprone-*,
   clang-analyzer-*
-HeaderFilterRegex: '$HEADER_FILTER'
+HeaderFilterRegex: \"$HEADER_FILTER\"
 FormatStyle: file
 AnalyzeTemporaryDtors: false
 ..."

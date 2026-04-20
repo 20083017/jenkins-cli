@@ -68,15 +68,17 @@ FORMATTED_FILES="$REPORT_DIR/formatted-files.txt"
 COMPILE_DB_PATH="$REPORT_DIR/compile-commands-path.txt"
 
 if [[ ${#FILES[@]} -eq 0 ]]; then
-  while IFS= read -r file; do
-    FILES+=("$file")
-  done < <(cd "$SOURCE_DIR" && git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx')
+  if git -C "$SOURCE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    while IFS= read -r file; do
+      FILES+=("$file")
+    done < <(git -C "$SOURCE_DIR" ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx')
+  fi
 fi
 
 if [[ ${#FILES[@]} -eq 0 ]]; then
   while IFS= read -r file; do
     FILES+=("$file")
-  done < <(find "$SOURCE_DIR" -type f \( -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' -o -name '*.h' -o -name '*.hh' -o -name '*.hpp' -o -name '*.hxx' \) -printf '%P\n')
+  done < <(find "$SOURCE_DIR" -type f \( -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' -o -name '*.h' -o -name '*.hh' -o -name '*.hpp' -o -name '*.hxx' \) -print | sed "s|^$SOURCE_DIR/||")
 fi
 
 if [[ ${#FILES[@]} -eq 0 ]]; then

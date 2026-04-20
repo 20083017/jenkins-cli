@@ -12,17 +12,17 @@ Use this checklist to execute the Kubernetes + Jenkins delivery plan in controll
 
 ## Phase 2 — Controller and Agent Bootstrap
 
-- [ ] Install Jenkins controller dependencies with `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-jenkins-plugins.sh` or controller-image bake process.
+- [ ] Install Jenkins controller dependencies with `scripts/platform/install-jenkins-plugins.sh` or controller-image bake process.
 - [ ] Apply JCasC baseline, RBAC policy, credentials, and shared library registration.
 - [ ] Provision Kubernetes-based Jenkins agents with the required build image and workspace policy.
-- [ ] Install operator dependencies on build agents with `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-platform-deps.sh`.
+- [ ] Install operator dependencies on build agents with `scripts/platform/install-platform-deps.sh`.
 - [ ] Validate `jk`, `kubectl`, `helm`, `cmake`, `clang-format`, and `clang-tidy` availability in the agent image.
 
 ## Phase 3 — C++ Quality Gate Enablement
 
-- [ ] Bootstrap `.clang-format` and `.clang-tidy` in each target C++ repository with `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/bootstrap-cpp-quality.sh`.
+- [ ] Bootstrap `.clang-format` and `.clang-tidy` in each target C++ repository with `scripts/platform/bootstrap-cpp-quality.sh`.
 - [ ] Ensure CI can generate `compile_commands.json` for every supported C++ build flavor.
-- [ ] Add `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/check-cpp-quality.sh` to the Jenkins shared library or repository-local pipeline.
+- [ ] Add `scripts/platform/check-cpp-quality.sh` to the Jenkins shared library or repository-local pipeline.
 - [ ] Publish format drift and static analysis reports as Jenkins artifacts.
 - [ ] Define the exception process for temporary suppressions and baseline waivers.
 

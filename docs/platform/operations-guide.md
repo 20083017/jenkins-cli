@@ -6,11 +6,11 @@ This guide explains how to install dependencies, bootstrap C++ quality controls,
 
 ### Workstation / Build-Agent Dependencies
 
-Use `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-platform-deps.sh` to install the baseline CLI and C++ quality tooling:
+Use `scripts/platform/install-platform-deps.sh` from the repository root to install the baseline CLI and C++ quality tooling:
 
 ```bash
-/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-platform-deps.sh --mode quality
-/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-platform-deps.sh --mode platform
+./scripts/platform/install-platform-deps.sh --mode quality
+./scripts/platform/install-platform-deps.sh --mode platform
 ```
 
 Modes:
@@ -21,10 +21,10 @@ Modes:
 
 ### Jenkins Controller Plugin Strategy
 
-Use `/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-jenkins-plugins.sh` on the controller host or within the controller image build:
+Use `scripts/platform/install-jenkins-plugins.sh` on the controller host or within the controller image build:
 
 ```bash
-/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/install-jenkins-plugins.sh
+./scripts/platform/install-jenkins-plugins.sh
 ```
 
 Default plugin set covers:
@@ -44,7 +44,7 @@ Run the plugin install during image bake or maintenance windows, then restart Je
 For each target C++ repository:
 
 ```bash
-/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/bootstrap-cpp-quality.sh \
+./scripts/platform/bootstrap-cpp-quality.sh \
   --target-dir /path/to/cpp-service \
   --header-filter '.*'
 ```
@@ -116,7 +116,7 @@ helm version
 Pipeline-side verification:
 
 ```bash
-/home/runner/work/jenkins-cli/jenkins-cli/scripts/platform/check-cpp-quality.sh \
+./scripts/platform/check-cpp-quality.sh \
   --source-dir /path/to/cpp-service \
   --build-dir /path/to/cpp-service/build/ci
 ```
