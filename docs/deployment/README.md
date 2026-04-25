@@ -10,6 +10,7 @@
 
 | 文件 | 用途 |
 |---|---|
+| [`proxy-and-lb-primer.md`](./proxy-and-lb-primer.md) | 5 分钟入门：VIP / L4 LB / L7 反向代理（含 Nginx 原理速记） |
 | [`topology.md`](./topology.md) | 拓扑文档（通用逻辑拓扑、阿里云 ACK、本地 IDC） |
 | [`design.md`](./design.md) | 设计文档（HA / 权限 / 备份 / 网络 / 合规 / LDAP） |
 | [`deploy-aliyun-ack.md`](./deploy-aliyun-ack.md) | 阿里云 ACK（K8s）部署手册 |
