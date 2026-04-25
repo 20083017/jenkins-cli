@@ -147,7 +147,7 @@
    proxy_set_header Connection "";
    ```
 6. **Jenkins 特有注意点**：
-   - 控制台日志 / SSE / WebSocket（`/cli`、`/wsagents`）需要 `proxy_buffering off;` + 较大的 `proxy_read_timeout`（如 `1h`），否则长任务会被截断。
+   - 控制台日志 / SSE / WebSocket（如内嵌 agent 的 WebSocket 接入、`jenkins-cli.jar -webSocket` 等长连接路径）需要 `proxy_buffering off;` + 较大的 `proxy_read_timeout`（如 `1h`），否则长任务会被截断。具体路径以你 Jenkins 版本与插件实际暴露的为准。
    - WebSocket 还需：
      ```nginx
      proxy_set_header Upgrade    $http_upgrade;
